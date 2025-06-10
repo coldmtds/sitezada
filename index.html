@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plataforma de Estudos Premium</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .highlight-color { color: #4f46e5; }
+        .bg-highlight { background-color: #4f46e5; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #e2e8f0; }
+        ::-webkit-scrollbar-thumb { background: #a5b4fc; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #818cf8; }
+        .blurry-backdrop { backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <div class="flex min-h-screen">
+        <!-- Barra Lateral de Navegação -->
+        <aside class="w-72 bg-white border-r border-slate-200 flex-shrink-0">
+            <div class="p-6">
+                <h1 class="text-2xl font-bold flex items-center">
+                    <i data-lucide="book-open-check" class="mr-2 highlight-color"></i>
+                    Core<span class="font-light">Hub</span>
+                </h1>
+            </div>
+            <nav id="subject-nav" class="p-4">
+                <h2 class="px-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Conteúdo</h2>
+                <!-- Links das matérias serão inseridos aqui -->
+            </nav>
+        </aside>
+
+        <!-- Conteúdo Principal -->
+        <main id="main-content" class="flex-1 p-6 md:p-10">
+            <header class="mb-8">
+                <h2 id="subject-title" class="text-4xl font-bold text-slate-900">Bem-vindo(a)!</h2>
+                <p id="subject-description" class="mt-2 text-lg text-slate-600">Selecione um curso ou matéria na barra lateral para começar.</p>
+            </header>
+
+            <div id="content-area">
+                <!-- Seção de Videoaulas -->
+                <section id="video-section" class="mb-12">
+                    <h3 class="text-2xl font-semibold mb-6 flex items-center">
+                        <i data-lucide="video" class="mr-3 highlight-color"></i>
+                        Videoaulas
+                    </h3>
+                    <div id="video-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                </section>
+
+                <!-- Seção de Materiais de Apoio -->
+                <section id="files-section">
+                    <h3 class="text-2xl font-semibold mb-6 flex items-center">
+                        <i data-lucide="file-text" class="mr-3 highlight-color"></i>
+                        Materiais de Apoio
+                    </h3>
+                    <div id="file-list" class="space-y-3"></div>
+                </section>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Modal de Pagamento (inicialmente oculto) -->
+    <div id="payment-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 hidden blurry-backdrop">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all">
+            <div class="p-6 border-b border-slate-200 flex justify-between items-center">
+                <h3 class="text-xl font-semibold">Complete o Pagamento</h3>
+                <button id="close-modal-btn" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <div class="p-8 text-center">
+                <p class="text-slate-600">Para liberar o acesso ao curso <strong id="modal-course-name" class="text-slate-800"></strong>, realize o pagamento via Pix.</p>
+                <div class="my-6">
+                    <!-- LINHA ALTERADA: Agora busca o QR Code da sua pasta local 'image'. Ajuste o nome do arquivo se necessário. -->
+                    <img src="image/qrcode.jpg" alt="QR Code Pix" class="mx-auto rounded-lg border-4 border-slate-200">
+                </div>
+                <p class="text-sm text-slate-500 mb-2">ou use o Pix Copia e Cola:</p>
+                <div class="bg-slate-100 p-3 rounded-lg flex items-center">
+                    <input id="pix-code" type="text" readonly value="00020126330014br.gov.bcb.pix011112345678901230215valorDoProduto5303986540550.005802BR5913NomeDoVendedor6008Brasilia62070503***6304E4A7" class="bg-transparent w-full text-sm text-slate-700 outline-none">
+                    <button id="copy-pix-btn" class="ml-2 bg-highlight text-white px-3 py-2 rounded-md font-semibold text-sm hover:bg-indigo-700 transition-colors">Copiar</button>
+                </div>
+                <div class="mt-6 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 text-sm text-left">
+                    <i data-lucide="alert-triangle" class="inline-block w-4 h-4 mr-2"></i>
+                    <strong>Atenção:</strong> Esta é apenas uma simulação. Nenhuma cobrança real será feita.
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // --- INÍCIO DA ÁREA DE EDIÇÃO ---
+        const studyData = {
+            'matematica': {
+                name: 'Introdução ao curso',
+                isPremium: false, // Conteúdo gratuito
+                description: 'Aulas e materiais sobre os fundamentos da matemática, desde álgebra até geometria.',
+                videos: [ { title: 'Teste: Planeta Terra III (Trailer)', embedUrl: 'https://www.youtube.com/embed/m2op32cso7Y' } ],
+                files: [ { title: 'Lista de Exercícios: Álgebra Básica (PDF)', url: '#' } ]
+            },
+            'investimentos': {
+                name: 'Grupo de Networking',
+                isPremium: true, // Conteúdo PAGO
+                price: "15,90",
+                description: 'Conecte-se com profissionais influentes, amplie suas oportunidades e impulsione seu sucesso em um grupo exclusivo de networking.',
+                // Vídeos e arquivos de cursos premium não são listados aqui
+            },
+            'portugues': {
+                name: 'Português (Grátis)',
+                isPremium: false,
+                description: 'Explore a gramática, literatura e redação da língua portuguesa.',
+                videos: [ { title: 'Orações Subordinadas', embedUrl: 'https://www.youtube.com/embed/W5QX_eJII6I' } ],
+                files: [ { title: 'Guia de Crase (PDF)', url: '#' } ]
+            }
+        };
+        // --- FIM DA ÁREA DE EDIÇÃO ---
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elementos da página
+            const nav = document.getElementById('subject-nav');
+            const mainContent = document.getElementById('main-content');
+            const contentArea = document.getElementById('content-area');
+
+            // Elementos do Modal
+            const modal = document.getElementById('payment-modal');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const copyPixBtn = document.getElementById('copy-pix-btn');
+            const pixCodeInput = document.getElementById('pix-code');
+            const modalCourseName = document.getElementById('modal-course-name');
+            
+            // Função para renderizar conteúdo premium (bloqueado)
+            function renderPremiumPlaceholder(subject) {
+                contentArea.innerHTML = `
+                    <div class="text-center bg-white p-10 rounded-lg shadow-lg border border-slate-200">
+                        <div class="mx-auto bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center">
+                            <i data-lucide="lock" class="w-8 h-8 highlight-color"></i>
+                        </div>
+                        <h3 class="mt-4 text-2xl font-bold text-slate-800">${subject.name}</h3>
+                        <p class="mt-2 text-slate-600 max-w-lg mx-auto">${subject.description}</p>
+                        <p class="text-4xl font-bold my-4 highlight-color">R$ ${subject.price}</p>
+                        <button id="unlock-btn" class="bg-highlight text-white font-semibold px-8 py-3 rounded-lg shadow-md hover:bg-indigo-700 transition-transform hover:scale-105">
+                            Liberar Acesso Agora
+                        </button>
+                    </div>
+                `;
+                document.getElementById('unlock-btn').addEventListener('click', () => showPaymentModal(subject));
+            }
+
+            // Função para renderizar conteúdo gratuito
+            function renderFreeContent(subject) {
+                 contentArea.innerHTML = `
+                    <section id="video-section" class="mb-12">
+                        <h3 class="text-2xl font-semibold mb-6 flex items-center"><i data-lucide="video" class="mr-3 highlight-color"></i>Videoaulas</h3>
+                        <div id="video-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                    </section>
+                    <section id="files-section">
+                        <h3 class="text-2xl font-semibold mb-6 flex items-center"><i data-lucide="file-text" class="mr-3 highlight-color"></i>Materiais de Apoio</h3>
+                        <div id="file-list" class="space-y-3"></div>
+                    </section>
+                `;
+                const videoGrid = document.getElementById('video-grid');
+                const fileList = document.getElementById('file-list');
+                
+                subject.videos.forEach(video => {
+                    videoGrid.innerHTML += `
+                        <div class="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:scale-105">
+                            <div class="aspect-w-16 aspect-h-9"><iframe src="${video.embedUrl}" frameborder="0" allowfullscreen class="w-full h-full"></iframe></div>
+                            <div class="p-4"><h4 class="font-semibold">${video.title}</h4></div>
+                        </div>`;
+                });
+                 subject.files.forEach(file => {
+                    fileList.innerHTML += `
+                        <a href="${file.url}" target="_blank" class="flex items-center p-4 bg-white rounded-lg shadow-sm hover:bg-indigo-50 group">
+                            <div class="p-2 bg-indigo-100 rounded-md mr-4"><i data-lucide="download" class="w-5 h-5 text-indigo-600"></i></div>
+                            <span class="font-medium group-hover:text-indigo-700">${file.title}</span>
+                            <i data-lucide="arrow-right" class="w-5 h-5 ml-auto text-slate-400 group-hover:text-indigo-600 group-hover:translate-x-1"></i>
+                        </a>`;
+                });
+            }
+
+            // Função principal de renderização
+            function renderContent(subjectId) {
+                const subject = studyData[subjectId];
+                document.getElementById('subject-title').textContent = subject.name;
+                document.getElementById('subject-description').textContent = subject.description;
+
+                if (subject.isPremium) {
+                    renderPremiumPlaceholder(subject);
+                } else {
+                    renderFreeContent(subject);
+                }
+                
+                // Atualiza navegação
+                document.querySelectorAll('#subject-nav a').forEach(link => {
+                    link.classList.remove('bg-indigo-100', 'font-semibold', 'highlight-color');
+                    if (link.dataset.subject === subjectId) {
+                        link.classList.add('bg-indigo-100', 'font-semibold', 'highlight-color');
+                    }
+                });
+                lucide.createIcons();
+            }
+
+            // Funções do Modal
+            function showPaymentModal(subject) {
+                modalCourseName.textContent = subject.name;
+                modal.classList.remove('hidden');
+                lucide.createIcons();
+            }
+
+            function hidePaymentModal() {
+                modal.classList.add('hidden');
+            }
+
+            // Lógica para copiar o código Pix
+            copyPixBtn.addEventListener('click', () => {
+                const tempInput = document.createElement('textarea');
+                tempInput.value = pixCodeInput.value;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+
+                copyPixBtn.textContent = 'Copiado!';
+                setTimeout(() => { copyPixBtn.textContent = 'Copiar'; }, 2000);
+            });
+
+            // Popula a navegação
+            Object.keys(studyData).forEach(key => {
+                const subject = studyData[key];
+                const link = document.createElement('a');
+                link.href = '#';
+                link.innerHTML = `
+                  <i data-lucide="${subject.isPremium ? 'lock' : 'check-circle'}" class="w-4 h-4 mr-3 ${subject.isPremium ? 'text-yellow-500' : 'text-green-500'}"></i>
+                  <span>${subject.name}</span>`;
+                link.dataset.subject = key;
+                link.className = 'flex items-center px-2 py-2 text-slate-700 rounded-md hover:bg-slate-100';
+                link.onclick = (e) => { e.preventDefault(); renderContent(key); };
+                nav.appendChild(link);
+            });
+            
+            // Eventos para fechar o modal
+            closeModalBtn.addEventListener('click', hidePaymentModal);
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) hidePaymentModal();
+            });
+
+            // Renderiza o primeiro item da lista por padrão
+            renderContent(Object.keys(studyData)[0]);
+        });
+    </script>
+</body>
+</html>
